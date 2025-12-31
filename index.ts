@@ -28,12 +28,12 @@ fetch(`https://api.github.com/users/${username}/events`)
       switch (event.type) {
         case "CommitCommentEvent": {
           console.log(
-            `${event.payload.action} a commit comment on ${event.repo.name}`,
+            `- ${event.payload.action} a commit comment on ${event.repo.name}`,
           );
           break;
         }
         case "CreateEvent": {
-          let msg = `created a ${event.payload.ref_type}`;
+          let msg = `- created a ${event.payload.ref_type}`;
           if (event.payload.ref_type === "repository") {
             msg += ` called ${event.repo.name}`;
           } else {
@@ -45,7 +45,7 @@ fetch(`https://api.github.com/users/${username}/events`)
         }
         case "DeleteEvent": {
           console.log(
-            `deleted a ${event.payload.ref_type} in ${event.repo.name}`,
+            `- deleted a ${event.payload.ref_type} in ${event.repo.name}`,
           );
           break;
         }
@@ -54,59 +54,99 @@ fetch(`https://api.github.com/users/${username}/events`)
             event.payload.action === "created"
               ? "started"
               : event.payload.action;
-          console.log(`${action} a discussion in ${event.repo.name}`);
+          console.log(`- ${action} a discussion in ${event.repo.name}`);
           break;
         }
         case "ForkEvent": {
-          console.log(`${event.payload.action} ${event.repo.name}`);
+          console.log(`- ${event.payload.action} ${event.repo.name}`);
           break;
         }
         case "GollumEvent": {
           break;
         }
         case "IssueCommentEvent": {
-          console.log(`left a comment in ${event.payload.issue.url}`);
+          console.log(`- left a comment in ${event.payload.issue.url}`);
+          break;
+        }
+        case "IssuesEvent": {
+          let issueCount = 0;
+          for (const e of events.slice(i)) {
+            if (
+              e.type === event.type &&
+              e.repo.name === event.repo.name &&
+              e.payload.action === event.payload.action
+            ) {
+              issueCount += 1;
+            } else {
+              break;
+            }
+          }
+
+          if (issueCount === 1) {
+            console.log(
+              `- ${event.payload.action} an issue in ${event.repo.name}`,
+            );
+          } else {
+            i = i + issueCount - 1;
+            console.log(
+              `- ${event.payload.action} ${issueCount} issues in ${event.repo.name}`,
+            );
+          }
           break;
         }
         case "MemberEvent": {
           if (event.payload.action === "added") {
-            console.log(`accepted an invitation to ${event.repo.name}`);
+            console.log(`- accepted an invitation to ${event.repo.name}`);
           }
           break;
         }
         case "PublicEvent": {
-          console.log(`make ${event.repo.name} public`);
+          console.log(`- make ${event.repo.name} public`);
           break;
         }
         case "PullRequestEvent": {
           console.log(
-            `${event.payload.action} a pull request in ${event.repo.name}`,
+            `- ${event.payload.action} a pull request in ${event.repo.name}`,
           );
           break;
         }
         case "PullRequestReviewEvent": {
           console.log(
-            `${event.payload.action} a PR review in ${event.repo.name}`,
+            `- ${event.payload.action} a PR review in ${event.repo.name}`,
           );
           break;
         }
         case "PullRequestReviewCommentEvent": {
           console.log(
-            `${event.payload.action} a PR comment in ${event.repo.name} (${event.payload.pull_request.title})`,
+            `- ${event.payload.action} a PR comment in ${event.repo.name} (${event.payload.pull_request.title})`,
           );
           break;
         }
         case "PushEvent": {
-          console.log(`pushed to ${event.repo.name}`);
+          let pushCount = 0;
+          for (const e of events.slice(i)) {
+            if (e.type === event.type && e.repo.name === event.repo.name) {
+              pushCount += 1;
+            } else {
+              break;
+            }
+          }
+
+          if (pushCount === 1) {
+            console.log(`- pushed to ${event.repo.name}`);
+          } else {
+            i = i + pushCount - 1;
+            console.log(`- pushed ${pushCount} commits to ${event.repo.name}`);
+          }
           break;
         }
         case "ReleaseEvent": {
           console.log(
-            `${event.payload.action} a release for ${event.repo.name}`,
+            `- ${event.payload.action} a release for ${event.repo.name}`,
           );
         }
         case "WatchEvent": {
-          console.log(`${event.payload.action} watching ${event.repo.name}`);
+          console.log(`- ${event.payload.action} watching ${event.repo.name}`);
           break;
         }
       }
