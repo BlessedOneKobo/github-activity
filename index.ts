@@ -1,4 +1,4 @@
-import type { TEvent } from "./types.mts";
+import type { TEvent, INotFoundError } from "./types.mts";
 
 const args = getProcessArgs(process.argv);
 const username = args.at(0);
@@ -10,7 +10,19 @@ if (!username) {
 
 fetch(`https://api.github.com/users/${username}/events`)
   .then((response) => response.json())
-  .then((events: TEvent[]) => {
+  .then((json: TEvent[] | INotFoundError) => {
+    if (!Array.isArray(json)) {
+      console.log(`${username} is not a Github user`);
+      return;
+    }
+
+    const events = json;
+
+    if (events.length === 0) {
+      console.log(`${username} does not have any recent activity`);
+      return;
+    }
+
     for (let i = 0; i < events.length; i += 1) {
       const event = events[i];
       switch (event.type) {
@@ -25,7 +37,8 @@ fetch(`https://api.github.com/users/${username}/events`)
           if (event.payload.ref_type === "repository") {
             msg += ` called ${event.repo.name}`;
           } else {
-            msg += ` in ${event.repo.name} called ${event.payload.full_ref.split("/").at(-1)}`;
+            const refName = event.payload.full_ref.split("/").at(-1);
+            msg += ` in ${event.repo.name} called ${refName}`;
           }
           console.log(msg);
           break;
@@ -37,9 +50,11 @@ fetch(`https://api.github.com/users/${username}/events`)
           break;
         }
         case "DiscussionEvent": {
-          console.log(
-            `${event.payload.action === "created" ? "started" : event.payload.action} a discussion in ${event.repo.name}`,
-          );
+          const action =
+            event.payload.action === "created"
+              ? "started"
+              : event.payload.action;
+          console.log(`${action} a discussion in ${event.repo.name}`);
           break;
         }
         case "ForkEvent": {

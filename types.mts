@@ -1,3 +1,8 @@
+export interface INotFoundError {
+  message: "Not Found";
+  status: "404";
+}
+
 type TEventType =
   | "CommitCommentEvent"
   | "CreateEvent"
