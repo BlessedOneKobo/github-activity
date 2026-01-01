@@ -38,7 +38,7 @@ fetch(`https://api.github.com/users/${username}/events`)
             msg += ` called ${event.repo.name}`;
           } else {
             const refName = event.payload.full_ref.split("/").at(-1);
-            msg += ` in ${event.repo.name} called ${refName}`;
+            msg += ` in ${event.repo.name} (${refName})`;
           }
           console.log(msg);
           break;
