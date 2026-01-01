@@ -69,18 +69,11 @@ fetch(`https://api.github.com/users/${username}/events`)
           break;
         }
         case "IssuesEvent": {
-          let issueCount = 0;
-          for (const e of events.slice(i)) {
-            if (
-              e.type === event.type &&
-              e.repo.name === event.repo.name &&
-              e.payload.action === event.payload.action
-            ) {
-              issueCount += 1;
-            } else {
-              break;
-            }
-          }
+          const issueCount = getEventCount({
+            currentEvent: event,
+            events: events.slice(i),
+            callback: (e) => e.payload.action === event.payload.action,
+          });
 
           if (issueCount === 1) {
             console.log(
@@ -123,14 +116,10 @@ fetch(`https://api.github.com/users/${username}/events`)
           break;
         }
         case "PushEvent": {
-          let pushCount = 0;
-          for (const e of events.slice(i)) {
-            if (e.type === event.type && e.repo.name === event.repo.name) {
-              pushCount += 1;
-            } else {
-              break;
-            }
-          }
+          const pushCount = getEventCount({
+            currentEvent: event,
+            events: events.slice(i),
+          });
 
           if (pushCount === 1) {
             console.log(`- pushed to ${event.repo.name}`);
@@ -164,4 +153,31 @@ function getProcessArgs(processArgs: string[]): string[] {
 
   // script was run as an executeable
   return processArgs.slice(1);
+}
+
+function getEventCount<E extends TEvent>({
+  currentEvent,
+  events,
+  callback,
+}: {
+  currentEvent: E;
+  events: Array<TEvent>;
+  callback?: (e: E) => boolean;
+}) {
+  let eventCount = 0;
+  for (const e of events) {
+    if (
+      e.type === currentEvent.type &&
+      e.repo.name === currentEvent.repo.name
+    ) {
+      eventCount += 1;
+      if (typeof callback === "function" && !callback(e as E)) {
+        eventCount -= 1;
+        break;
+      }
+    } else {
+      break;
+    }
+  }
+  return eventCount;
 }
