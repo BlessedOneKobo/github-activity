@@ -14,7 +14,7 @@ A lightweight command-line interface (CLI) tool to fetch and display the recent 
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/BlessedOneKobo/github-activity.git](https://github.com/BlessedOneKobo/github-activity.git)
+   git clone https://github.com/BlessedOneKobo/github-activity.git
    cd github-activity
    ```
 
